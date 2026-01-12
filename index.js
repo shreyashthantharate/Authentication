@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import db from "./utils/db.js";
+import { connect } from "mongoose";
 
 dotenv.config({
   path: "./.env",
@@ -9,7 +11,7 @@ dotenv.config({
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.BASE_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "Options"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -31,6 +33,9 @@ app.get("/about-us", (req, res) => {
 app.get("/contact-us", (req, res) => {
   res.send("This is contact us page");
 });
+
+// connection to database
+db();
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
