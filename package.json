@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Authentication backend built with Express.js providing secure user registration, login, JWT-based authentication.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
