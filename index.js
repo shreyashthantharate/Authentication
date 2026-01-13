@@ -2,7 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import db from "./utils/db.js";
-import { connect } from "mongoose";
+
+// import all routes
+import userRoutes from "./routes/user.routes.js";
 
 dotenv.config({
   path: "./.env",
@@ -36,6 +38,9 @@ app.get("/contact-us", (req, res) => {
 
 // connection to database
 db();
+
+// user routes
+app.use("/api/v1/users", userRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
