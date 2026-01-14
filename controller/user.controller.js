@@ -1,5 +1,6 @@
 import User from "../model/User.model.js";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 const registerUser = async (req, res) => {
   // get data
@@ -46,7 +47,40 @@ const registerUser = async (req, res) => {
     user.verificationToken = token;
 
     await user.save();
-  } catch (error) {}
+
+    // send email
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAILTRAP_HOST,
+      port: process.env.MAILTRAP_PORT,
+      secure: false, // Use true for port 465, false for port 587
+      auth: {
+        user: process.env.MAILTRAP_USERNAME,
+        pass: process.env.MAILTRAP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.MAILTRAP_PASSWORD,
+      to: user.email,
+      subject: "Verify your email",
+      text: `Please click on the following link: ${process.env.BASE_URL}/api/v1/users/verify${token}`, // Plain-text version of the message
+      // html: "<b>Hello world?</b>", // HTML version of the message
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message:
+        "User registered successfully. Please check your email to verify your account.",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Error in registering user",
+      success: false,
+      error,
+    });
+  }
 };
 
 export { registerUser };
