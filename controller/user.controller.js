@@ -1,6 +1,7 @@
 import User from "../model/User.model.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+
 const registerUser = async (req, res) => {
   // get data
   //validate
