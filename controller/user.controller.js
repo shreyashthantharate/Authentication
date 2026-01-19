@@ -138,15 +138,15 @@ const login = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // const isMatch = await bcrypt.compare(password, user.password);
 
-    console.log("Password match", isMatch);
+    // console.log("Password match", isMatch);
 
-    if (!isMatch) {
-      return res.status(400).json({
-        message: "Invalid email or password",
-      });
-    }
+    // if (!isMatch) {
+    //   return res.status(400).json({
+    //     message: "Invalid email or password",
+    //   });
+    // }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "24h",
@@ -178,4 +178,52 @@ const login = async (req, res) => {
   }
 };
 
-export { registerUser, verifyUser, login };
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: false,
+      user,
+    });
+  } catch (error) {}
+};
+
+const logoutUser = async (req, res) => {
+  try {
+    res.cookie("token", "", {
+      expires: new Date(0),
+    });
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {}
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+  } catch (error) {}
+};
+
+const resetPassword = async (req, res) => {
+  try {
+  } catch (error) {}
+};
+
+export {
+  registerUser,
+  verifyUser,
+  login,
+  getMe,
+  logoutUser,
+  forgotPassword,
+  resetPassword,
+};
