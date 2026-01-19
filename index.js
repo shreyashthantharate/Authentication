@@ -7,17 +7,16 @@ import cookieParser from "cookie-parser";
 // import all routes
 import userRoutes from "./routes/user.routes.js";
 
-dotenv.config({
-  path: "./.env",
-});
+dotenv.config();
 
 const app = express();
 app.use(
   cors({
     origin: process.env.BASE_URL,
-    methods: ["GET", "POST", "PUT", "DELETE", "Options"],
+    credentials: true,
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use(express.json());
