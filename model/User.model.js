@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import brcypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -26,13 +26,13 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Hook to hash password before saving
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
-    this.password = await brcypt.hash(this.password, 10);
+    this.password = await bcrypt.hash(this.password, 10);
   }
   next();
 });
