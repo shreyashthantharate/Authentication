@@ -138,15 +138,15 @@ const login = async (req, res) => {
       });
     }
 
-    // const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    // console.log("Password match", isMatch);
+    console.log("Password match", isMatch);
 
-    // if (!isMatch) {
-    //   return res.status(400).json({
-    //     message: "Invalid email or password",
-    //   });
-    // }
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "24h",
@@ -210,11 +210,43 @@ const logoutUser = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
   try {
+    // get email from req.body
+    // validate email
+    // find user based on email
+    // if user not found, send error response
+    // if user found, create a reset token
+    // save token and expiry in database
+    // send email to user with reset link
+    // //////////////////////////////////
+    // get email from req.body
+    // validate email
+    // find user based on email
+    // reset token + reset expiry => Date.now() + 10 *60 * 1000 (10 minutes)=> user.save()
+    // send email to user with reset link => design url
   } catch (error) {}
 };
 
 const resetPassword = async (req, res) => {
+  // get token from params
+  // validate token
+  // find user based on token
+  // if user not found, send error response
+  // if user found, update password
+  // //////////////////////////////////////
+  // collect token from params
+  // collect password from req.body
+  // find user based on reset token and expiry
+  const { token } = req.params;
+  const { password } = req.body;
   try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    // set password in user
+    // reset reset token and expiry
+    // save user
+    // send success response
   } catch (error) {}
 };
 
