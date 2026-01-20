@@ -3,7 +3,6 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import cookieParser from "cookie-parser";
 
 const registerUser = async (req, res) => {
   // get data
@@ -211,19 +210,67 @@ const logoutUser = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     // get email from req.body
+    const { email } = req.body;
     // validate email
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
     // find user based on email
-    // if user not found, send error response
-    // if user found, create a reset token
-    // save token and expiry in database
-    // send email to user with reset link
-    // //////////////////////////////////
-    // get email from req.body
-    // validate email
-    // find user based on email
+    const user = await User.find({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+    console.log("User found: ", user);
+
     // reset token + reset expiry => Date.now() + 10 *60 * 1000 (10 minutes)=> user.save()
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    console.log("User after update: ", user);
+
+    await user.save;
+
+    console.log("Reset token: ", user.resetPasswordToken);
+
     // send email to user with reset link => design url
-  } catch (error) {}
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAILTRAP_HOST,
+      port: process.env.MAILTRAP_PORT,
+      secure: false, // Use true for port 465, false for port 587
+      auth: {
+        user: process.env.MAILTRAP_USERNAME,
+        pass: process.env.MAILTRAP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.MAILTRAP_SENDEREMAIL,
+      to: email,
+      subject: "Forgot password request", // Subject line
+      text: `${process.env.BASE_URL}/api/v1/users/reset-password/${resetToken}`, // Plain-text version of the message
+      // html: "<b>Hello world?</b>", // HTML version of the message
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: "Password reset email sent",
+      success: true,
+    });
+  } catch (error) {
+    console.log(`Error in forgot password process: ${error}`);
+
+    return res.status(500).json({
+      message: "Server error",
+      error,
+    });
+  }
 };
 
 const resetPassword = async (req, res) => {
@@ -237,17 +284,51 @@ const resetPassword = async (req, res) => {
   // collect password from req.body
   // find user based on reset token and expiry
   const { token } = req.params;
-  const { password } = req.body;
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() },
+  if (!token) {
+    return res.status(400).json({
+      message: "Token is required",
     });
+  }
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).json({
+      message: "Password is required",
+    });
+  }
+  try {
+    const user = await User.find({
+      resetPasswordToken: token,
+    });
+    // console.log("Reset token from params: ", resetPasswordToken);
+    console.log("User found for password reset: ", user);
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid token",
+      });
+    }
     // set password in user
+    user.password = password;
     // reset reset token and expiry
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
     // save user
+    await user.save;
     // send success response
-  } catch (error) {}
+
+    res.status(200).json({
+      message: "Password reset successful",
+      success: true,
+    });
+    console.log("Password reset successful for user: ", user);
+  } catch (error) {
+    console.log(`Error in reset password: ${error}`);
+
+    return res.status(500).json({
+      message: "Server error",
+      error,
+    });
+  }
 };
 
 export {
