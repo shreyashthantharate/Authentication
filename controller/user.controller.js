@@ -137,7 +137,7 @@ const login = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password.toString(), user.password);
 
     console.log("Password match", isMatch);
 
